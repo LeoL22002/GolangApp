@@ -17,6 +17,10 @@ type Usuario struct {
 	password   string
 }
 
+type DatosPagina struct {
+	Usuarios []Usuario
+}
+
 func getConnection() (*sql.DB, error) {
 	connStr := "user=leolorenzo password=2190724 dbname=registros sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -67,7 +71,7 @@ func obtenerUsuarioPorID(id_usuario int) (*Usuario, error) {
 	return usuario, nil
 }
 
-func actualizarUsuario(id_usuario int, username, password string) error {
+func actualizarUsuario(id_usuario string, username, password string) error {
 	db, err := getConnection()
 	if err != nil {
 		return err
@@ -83,7 +87,7 @@ func actualizarUsuario(id_usuario int, username, password string) error {
 	return nil
 }
 
-func eliminarUsuario(id_usuario int) error {
+func eliminarUsuario(id_usuario string) error {
 	db, err := getConnection()
 	if err != nil {
 		return err
@@ -99,6 +103,35 @@ func eliminarUsuario(id_usuario int) error {
 	return nil
 }
 
+func obtenerTodosLosUsuarios() ([]Usuario, error) {
+	db, err := getConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	query := "SELECT id_usuario, username FROM usuarios;"
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var usuarios []Usuario
+	for rows.Next() {
+		var usuario Usuario
+		err := rows.Scan(&usuario.id_usuario, &usuario.username)
+		if err != nil {
+			return nil, err
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
+var plantilla = template.Must(template.ParseGlob("formulario.html"))
+
 func main() {
 	db, err := getConnection()
 	if err != nil {
@@ -106,29 +139,20 @@ func main() {
 	}
 	defer db.Close()
 	fmt.Println("Conexión a la base de datos establecida correctamente.")
+	usuarios, err := obtenerTodosLosUsuarios()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Mostrar los usuarios en la consola
+	for _, usuario := range usuarios {
+		fmt.Printf("ID: %d, Usuario: %s\n", usuario.id_usuario, usuario.username)
+	}
+
 	//WAOS
 	// Definir un controlador para la página de formulario
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			// Mostrar el formulario HTML para crear un nuevo usuario
-			// 	tmpl := `
-			// <!DOCTYPE html>
-			// <html>
-			// <head>
-			// 	<title>Formulario de Creación de Usuario</title>
-			// </head>
-			// <body>
-			// 	<h1>Formulario de Creación de Usuario</h1>
-			// 	<form method="post" action="/crear">
-			// 		<label for="username">Nombre de usuario:</label>
-			// 		<input type="text" name="username" required><br>
-			// 		<label for="password">Contraseña:</label>
-			// 		<input type="password" name="password" required><br>
-			// 		<input type="submit" value="Crear Usuario">
-			// 	</form>
-			// </body>
-			// </html>
-			// `
 
 			tmplHTML, err := template.ParseFiles("formulario.html")
 			if err != nil {
@@ -144,16 +168,52 @@ func main() {
 
 			// Llamar a la función crearUsuario para insertar en la base de datos
 			err := crearUsuario(username, password)
+
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
+			fmt.Println("\nUsuario Registrado!!\n")
 			// Redirigir o mostrar un mensaje de éxito
-			http.Redirect(w, r, "/exito", http.StatusSeeOther)
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+
 		}
+
 	})
 
+	http.HandleFunc("/actualizar", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Method)
+		id_usuario := r.FormValue("id_usuario")
+		username := r.FormValue("username")
+		password := r.FormValue("n_password")
+		// Convertir la cadena del ID en un entero
+
+		// Llamar a la función crearUsuario para insertar en la base de datos
+		err := actualizarUsuario(id_usuario, username, password)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("\nUsuario Actualizado!!\n")
+		// Redirigir o mostrar un mensaje de éxito
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+
+	http.HandleFunc("/eliminar", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.Method)
+		id_usuario := r.FormValue("id_usuario")
+
+		err := eliminarUsuario(id_usuario)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("\nUsuario Eliminado!!\n")
+		// Redirigir o mostrar un mensaje de éxito
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
 	//FIN DEL WAOS
 	http.ListenAndServe(":8080", nil)
 }

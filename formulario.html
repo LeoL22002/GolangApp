@@ -58,7 +58,7 @@
 <body>
     <div class="container">
         <h2>Formulario de Creación de Usuario</h2>
-        <form method="POST" action="/crear">
+        <form method="POST" action="/">
             <label for="username">Nombre de usuario:</label>
             <input type="text" id="username" name="username" required>
             
@@ -77,17 +77,17 @@
         </tr>
     </thead>
     <tbody>
-        {{range .}}
+        {{range .Usuarios}}
         <tr>
-            <td>{{.ID}}</td>
-            <td>{{.Username}}</td>
+            <td>{{.id_usuario}}</td>
+            <td>{{.username}}</td>
         </tr>
         {{end}}
     </tbody>
 </table>
 
-    </div>
 
+    </div>
 
 </body>
 
