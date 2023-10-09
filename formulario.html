@@ -67,24 +67,29 @@
 
             <input type="submit" value="Crear Usuario">
         </form>
-<!-- Agregar esta tabla al final del archivo HTML -->
-<h2>Usuarios Registrados</h2>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre de Usuario</th>
-        </tr>
-    </thead>
-    <tbody>
-        {{range .Usuarios}}
-        <tr>
-            <td>{{.id_usuario}}</td>
-            <td>{{.username}}</td>
-        </tr>
-        {{end}}
-    </tbody>
-</table>
+<h2>Actualizar Usuarios</h2>
+        <form method="PUT" action="/actualizar">
+            
+            <label for="id_usuario">ID:</label>
+            <input type="int" id="id_usuario" name="id_usuario" required>
+            <label for="username">Nuevo Nombre de usuario:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="n_password">Nueva Contraseña:</label>
+            <input type="password" id="n_password" name="n_password" required>
+                        
+            <input type="submit" value="Actualizar">
+        </form>
+
+
+        <h2>Eliminar Usuarios</h2>
+        <form method="PUT" action="/eliminar">
+            
+            <label for="id_usuario">Id del usuario:</label>
+            <input type="int" id="id_usuario" name="id_usuario" required>
+                                    
+            <input type="submit" value="Eliminar">
+        </form>
+
 
 
     </div>
