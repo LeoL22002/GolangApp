@@ -14,7 +14,7 @@ variable "do_token" {}
 
 # Configuración de proveedor
 provider "digitalocean" {
-  token = "dop_v1_bccd496d59a375becfce9808c850cfe76b1581e7eaeceef943f825f7fd88f76b"
+  token = "dop_v1_fa76490f26add2e9ba6c6d6f89492125fcc5822bcb62e6876ef70b0a8abe3829"
 }
 
 resource "digitalocean_droplet" "mi_servidor" {
@@ -22,9 +22,30 @@ resource "digitalocean_droplet" "mi_servidor" {
   region  = "nyc1"
   image  = "ubuntu-20-04-x64"
   size   = "s-1vcpu-1gb"
+
+  user_data = <<-EOF
+    #!/bin/bash
+    # Instalar Docker
+    apt-get update
+    apt-get -y install docker.io
+
+    # Instalar Docker Compose
+    curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    chmod +x /usr/local/bin/docker-compose
+
+    # Configurar variables de entorno para la aplicación
+    echo 'export DATABASE_HOST=localhost' >> /etc/environment
+    echo 'export DATABASE_USER=leolorenzo' >> /etc/environment
+    echo 'export DATABASE_PASSWORD=2190724' >> /etc/environment
+
+    # Configuración adicional del servidor de aplicación, incluyendo SSL 
+    
+    EOF
 }
+
 
 # Salida
 output "ip_servidor" {
   value = digitalocean_droplet.mi_servidor.ipv4_address
 }
+

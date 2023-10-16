@@ -1,0 +1,61 @@
+version: '3'
+services:
+  api:
+    build:
+      dockerfile: Dockerfile
+      context: ./server
+    depends_on:
+      - postgres
+    environment:
+      - GO_DOCKER_PORT=8080
+      - GO_LOCAL_PORT=8080
+      - POSTGRES_DB=registros
+      - POSTGRES_HOST=localhost
+      - POSTGRES_PASSWORD=2190724
+      - POSTGRES_PORT=8080
+      - POSTGRES_USER=leolorenzo
+      - SSL_MODE=disable
+    ports:
+      - $GO_LOCAL_PORT:8080
+    volumes:
+      - ./server:/app
+    env_file:
+      - ./.env
+
+  client:
+    build:
+      dockerfile: Dockerfile
+      context: ./client
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+
+  nginx:
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    depends_on:
+      - api
+      - client
+    ports:
+      - $CLIENT_LOCAL_PORT:$CLIENT_DOCKER_PORT
+    restart: always
+
+  postgres:
+    command: postgres -c config_file=/etc/postgresql.conf
+    environment:
+      - POSTGRES_USER=leolorenzo
+      - POSTGRES_PASSWORD=2190724
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_PORT=8080
+    image: postgres:latest
+    ports:
+      - $POSTGRES_PORT:8080
+    volumes:
+      - ./database/postgresql.conf:/etc/postgresql.conf
+      - ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    env_file:
+      - ./.env

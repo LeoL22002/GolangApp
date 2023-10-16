@@ -1,0 +1,8 @@
+------------------------------------------------
+go run nombre_del_archivo.go --> Correr archivo
+go build nombre_del_archivo.go --> Compilar app
+go get nombre_del_paquete --> Instalar Paquetes
+------------------------------------------------
+terraform plan
+terraform apply
+------------------------------------------------
