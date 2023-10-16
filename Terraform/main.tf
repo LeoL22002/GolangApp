@@ -14,17 +14,16 @@ variable "do_token" {}
 
 # Configuración de proveedor
 provider "digitalocean" {
-  token = "dop_v1_fa76490f26add2e9ba6c6d6f89492125fcc5822bcb62e6876ef70b0a8abe3829"
+  token = "dop_v1_4d6543552729dc299ad644241ad315660e20efb24a6adadb0fa99a64c623f1be"
 }
 
-resource "digitalocean_droplet" "mi_servidor" {
-  name  = "mi-servidor"
+resource "digitalocean_droplet" "first-project" {
+  name  = "lorenzo-servidor"
   region  = "nyc1"
-  image  = "ubuntu-20-04-x64"
+  image  = "ubuntu-23-04-x64"
   size   = "s-1vcpu-1gb"
-
   user_data = <<-EOF
-    #!/bin/bash
+      #!/bin/bash
     # Instalar Docker
     apt-get update
     apt-get -y install docker.io
@@ -38,14 +37,7 @@ resource "digitalocean_droplet" "mi_servidor" {
     echo 'export DATABASE_USER=leolorenzo' >> /etc/environment
     echo 'export DATABASE_PASSWORD=2190724' >> /etc/environment
 
-    # Configuración adicional del servidor de aplicación, incluyendo SSL 
-    
-    EOF
+    # Configuración adicional del servidor de aplicación, incluyendo SSL 
+    
+    EOF
 }
-
-
-# Salida
-output "ip_servidor" {
-  value = digitalocean_droplet.mi_servidor.ipv4_address
-}
-
